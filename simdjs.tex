@@ -62,12 +62,18 @@
 \authorinfo{Peter Jensen}
            {Intel Corporation}
            {peter.jensen@intel.com}
-\authorinfo{Ivan Jibaja}
-           {Intel Corporation}
-           {ivan.jibaja@intel.com}
 \authorinfo{John McCutchan}
            {Google Inc.}
            {johnmccutchan@google.com}
+\authorinfo{Ivan Jibaja}
+           {Intel Corporation}
+           {ivan.jibaja@intel.com}
+\authorinfo{Dan Gohman}
+           {Mozilla}
+           {sunfish@mozilla.com}
+\authorinfo{Ningxin Hu}
+           {Intel Corporation}
+           {ningxin.hu@intel.com}
 
 \maketitle
 
@@ -87,6 +93,24 @@ This is the text of the abstract.
 
 \section{Introduction}
 
+We'll explore the use of Mozilla's Emscripten to compile C++ benchmarks, with use of SIMD intrinsics,
+into JavaScript.  This was recently made possible by the SIMD.JS primitives introduced in
+JavaScript VM prototypes for Chromium and Firefox as well as extensions to the Emscripten C++->JavaScript
+compiler.  Emscripten will correctly translate a subset of available C++ SIMD x86 intrinsics into corresponding operations defined in SIMD.JS.
+The JavaScript benchmarks associated with the SIMD.JS primitives were converted to C++ by hand,
+and then automatically converted back into JavaScript using the Emscripten compiler.
+
+\section{SIMD.JS}
+
+\section{Emscripten}
+
+\section{Compiling x86 C++ SIMD intrinsics}
+
+\section{Benchmarks}
+
+\section{Results}
+
+\section{Summary}
 
 \appendix
 \section{Appendix Title}
