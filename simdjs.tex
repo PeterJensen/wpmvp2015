@@ -29,8 +29,11 @@
 % 11pt          To set in 11-point type instead of 9-point.
 % authoryear    To obtain author/year citation style instead of numeric.
 
-\usepackage{amsmath}
+\let\program\undefined % \program from acmtras2e conflicts with our program
 
+\usepackage{amsmath}
+\usepackage{program}
+\usepackage{graphicx}
 
 \begin{document}
 
@@ -93,14 +96,39 @@ This is the text of the abstract.
 
 \section{Introduction}
 
-We'll explore the use of Mozilla's Emscripten to compile C++ benchmarks, with use of SIMD intrinsics,
+We'll explore the use of Mozilla's Emscripten to compile C++ benchmarks, that has use of SIMD intrinsics,
 into JavaScript.  This was recently made possible by the SIMD.JS primitives introduced in
-JavaScript VM prototypes for Chromium and Firefox as well as extensions to the Emscripten C++->JavaScript
+JavaScript VM prototypes for Chromium and Firefox as well as extensions to the Emscripten 
 compiler.  Emscripten will correctly translate a subset of available C++ SIMD x86 intrinsics into corresponding operations defined in SIMD.JS.
 The JavaScript benchmarks associated with the SIMD.JS primitives were converted to C++ by hand,
 and then automatically converted back into JavaScript using the Emscripten compiler.
 
 \section{SIMD.JS}
+
+\begin{figure}
+\begin{small}
+\begin{program}[style=tt, number=true]
+fu\tab{}nction average(data) \{
+  var sum = new SIMD.float32x4.splat(0.0);
+  fo\tab{}r (var i = 0; i < data.length; i++) \{
+    sum = SIMD.float32x4.add(sum, data[i]);\untab{}
+  \}
+  var total = sum.x + sum.y + sum.z + sum.w;
+  return total / (data.length * 4);\untab{}
+\}
+\end{program}
+\end{small}
+\caption{Finding the average of an array of numbers in JavaScript using SIMD.}
+\label{fig:simd-average}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.5\textwidth]{figures/hierarchy.png}
+\end{center}
+\caption{SIMD.JS object hierarchy}
+\label{fig:hierarchy}
+\end{figure}
 
 \section{Emscripten}
 
