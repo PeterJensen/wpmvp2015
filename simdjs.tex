@@ -215,22 +215,22 @@ fu\tab{}nction average(data) \{
 \label{fig:simd-average}
 \end{figure}
 
-The optimizing Just-In-Time (JIT) compiler in our Chrome/V8 SIMD enabled
-prototype is able to produce the code in Figure~\ref{simd-average-code} for
-the body of the loop.  The code shows how the compiler is able utilize a
-128-bit SIMD register (xmm) to hold the value of \ttt{sum} and to use the
-\ttt{addps} instruction for adding 4 single precision numbers in one
-instruction.  For more details on how the JIT compilers operate see <REF>.
-
 \begin{figure}
 \begin{small}
 \begin{program}[style=tt, number=true]
 Assembly dump
 \end{program}
 \end{small}
-\caption{JIT compiler generated code for the \ttt{average} function}
+\caption{JIT compiler generated code for the average function}
 \label{fig:simd-average-code}
 \end{figure}
+
+The optimizing Just-In-Time (JIT) compiler in our Chrome/V8 SIMD enabled
+prototype is able to produce the code in Figure~\ref{fig:simd-average-code} for
+the body of the loop.  The code shows how the compiler is able utilize a
+128-bit SIMD register (xmm) to hold the value of \ttt{sum} and to use the
+\ttt{addps} instruction for adding 4 single precision numbers in one
+instruction.  For more details on how the JIT compilers operate see <REF>.
 
 \subsection{The Future of SIMD.JS}
 
