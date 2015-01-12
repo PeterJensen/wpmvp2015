@@ -218,7 +218,26 @@ fu\tab{}nction average(data) \{
 \begin{figure}
 \begin{small}
 \begin{program}[style=tt, number=true]
-Assembly dump
+371  cmp eax,edx
+373  jnl 440  (270629B8)
+379  cmp esp,[0x645e9c]
+385  jc  445  (270629BD)
+391  mov esi,eax
+393  shl esi,2
+396  add esi,0x10
+399  mov ebx,ecx
+401  shl ebx,2
+404  cmp esi,ebx
+406  ja  499  (270629F3)
+412  movups xmm2,[edi+eax*2]
+416  movaps xmm3,xmm1
+419  addps xmm3,xmm2
+422  mov ebx,eax
+424  add ebx,0x8
+427  jo  504  (270629F8)
+433  movaps xmm1,xmm3
+436  mov eax,ebx
+438  jmp 371  (27062973)
 \end{program}
 \end{small}
 \caption{JIT compiler generated code for the average function}
@@ -227,10 +246,41 @@ Assembly dump
 
 The optimizing Just-In-Time (JIT) compiler in our Chrome/V8 SIMD enabled
 prototype is able to produce the code in Figure~\ref{fig:average-simd-code} for
-the body of the loop.  The code shows how the compiler is able utilize a
-128-bit SIMD register (xmm) to hold the value of \ttt{sum} and to use the
+the body of the loop.  The code shows how the compiler is able to utilize
+128-bit SIMD registers (xmm) to hold the value of \ttt{sum} and to use the
 \ttt{addps} instruction for adding 4 single precision numbers in one
-instruction.  For more details on how the JIT compilers operate see <REF>.
+instruction.  The details for this code snippet are as follows:
+
+line 1-2: Check the loop index, \ttt{i}, against the upper bound and
+exit the loop if upper bound is encountered.  \ttt{eax} holds the loop
+index and \ttt{edx} holds the upper bound.
+
+line 3-4: Check to enable the JavaScript engine to abort the
+execution, if the loop has been running for too long.  It will prevent
+a user program from hanging the browser.
+
+line 5-11: Bounds check for the SIMD\_float32x4\_load operation. \ttt{ecx}
+holds the upper bound.
+
+line 12: Load the 4 32-bit float values. \ttt{edi} holds the base address
+of the data.  The reason the index is multiplied by 2 and not 4 is the fact
+that V8 represents integers in bits 1-31, so the value in \ttt{eax} is already
+holding the value of the index variable times 2.
+
+line 13-14: Add the four 32-bit float values.
+
+line 15-17: increment the loop index by 4.  Since the integer representation
+used by V8 is done in bits 1-31 the actual value added is 8.  The overflow
+checks is there to ensure that the result can still be represented in 31 bits,
+if not the representation is switched to a boxed floating point number.
+
+line 18: Move the result of the SIMD add operation, to the xmm1 register, which
+holds the value of \ttt{sum}.
+
+line 19-20: Move the new loop index value to it's proper register and jump back
+to the top of the loop.
+
+For more details on how the JIT compilers operate see <REF>.
 
 \subsection{The Future of SIMD.JS}
 
