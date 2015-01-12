@@ -331,7 +331,7 @@ to a dynamically typed language without pointers (JavaScript).
 
 Memory is modelled as overlayed typed arrays.
 In this example when the pointer \ttt{*a} is used to fetch from memory the corresponding
-JavaScript code is \ttt{+HEAPF32[\$a\$addr\$06 \textgreater\textgreater \ 2]} (line 14).
+JavaScript code is \ttt{+HEAPF32[\$a\$addr\$06 >> 2]} (line 14).
 \ttt{HEAPF32} is a global JavaScript typed array declared as follows:
 
 \smallskip
@@ -350,7 +350,7 @@ HEAPF64 = new Float64Array(buffer);\newline
 
 All of these typed arrays are views on the same array buffer, so they all
 access the same physical memory.  Notice that the index expression
-\ttt{'\$a\$addr\$06 \textgreater\textgreater\ 2'} is shifted left by 2.
+\ttt{'\$a\$addr\$06 >> 2'} is shifted right by 2.
 This is because \ttt{\$a\$addr\$06} is a byte address, and elements in the
 \ttt{HEAPF32} are 4 bytes each.
 
@@ -401,6 +401,96 @@ fl\tab{}oat averageIntrin(float *a, uint32\_t length) \{
 \label{fig:average-intrin}
 \end{figure}
 
+The \ttt{\_\_m128} type holds 4 32-bit float numbers.  The \ttt{\_mm\_*\_ps}
+function calls are the SIMD intrinsics, which operates on single precision 
+\ttt{\_\_m128} values.  For example, the \ttt{\_mm\_add\_ps} intrinsic maps 
+to the x86 \ttt{addps} instruction, which adds 4 32-bit float numbers in one 
+operation.  This allows the iteration count to be reduced by a factor of 4
+resulting in an equivalent speedup.
+
+The resulting JavaScript produced by Emscripten is shown in
+Figure~\ref{fig:average-intrin-js}.
+
+\begin{figure}
+\begin{small}
+\begin{program}[style=tt, number=true]
+fu\tab{}nction \_averageIntrin(\$a, \$length) \{
+  \$a = \$a \textbar\ 0;
+  \$length = \$length \textbar\ 0;
+  var \tab{}\$add\$i = SIMD\_float32x4(0, 0, 0, 0),
+      \$j\$09 = 0,
+      \$sumx4\$0\$lcssa = SIMD\_float32x4(0, 0, 0, 0),
+      \$sumx4\$010 = SIMD\_float32x4(0, 0, 0, 0),
+      sp = 0;\untab{}
+  sp = STACKTOP;
+  if\tab{} ((\$length \textbar\ 0) == 0)
+    \$sumx4\$0\$lcssa = SIMD\_float32x4\_splat(Math\_fround(0));\untab{}
+  el\tab{}se \{
+    \$j\$09 = 0;
+    \$sumx4\$010 = SIMD\_float32x4\_splat(Math\_fround(0));
+    whi\tab{}le (1) \{
+      \$a\tab{}dd\$i =
+        SI\tab{}MD\_float32x4\_add(
+          \$sumx4\$010,
+          SIMD\_float32x4\_load(buffer, \$a + (\$j\$09 << 2) \textbar\ 0));\untab{}\untab{}
+      \$j\$09 = \$j\$09 + 4 \textbar\ 0;
+      if\tab{} (\!(\$j\$09 >>> 0 < \$length >>> 0)) \{
+        \$sumx4\$0\$lcssa = \$add\$i;
+        break;\untab{}
+      \} else \$sumx4\$010 = \$add\$i;\untab{}
+    \}\untab{}
+  \}
+  STACKTOP = sp;
+  return\tab{} +((+\$sumx4\$0\$lcssa.w + (+\$sumx4\$0\$lcssa.z +
+        (+\$sumx4\$0\$lcssa.x + +\$sumx4\$0\$lcssa.y))) /
+        +(\$length >>> 0));\untab{}\untab{}
+\}
+\end{program}
+\end{small}
+\caption{Emscripten generated SIMD JavaScript code for the \ttt{average} function}
+\label{fig:average-intrin-js}
+\end{figure}
+
+The JavaScript code in Figure~\ref{fig:average-intrin-js} might appear
+extensive at first look, however, it is very similar to the handwritten
+version of the function from Figure~\ref{fig:average-simd}.  The while loop
+starting at line 15 corresponds to the for loop from the C program.  Implementing
+a for loop as a while loop takes a bit more code.  The important thing to notice
+here is the use of the \ttt{SIMD\_float32x4\_add} and \ttt{SIMD\_float32x4\_load}
+SIMD.JS operations.  The use of '\_' instead of '.' is because Emscripten have
+created single identifier versions for all the SIMD.JS primitives.
+
+It's important to note that use of CPU specific intrinsics makes the C version
+of the code target specific, i.e. it will only execute on x86 CPUs, whereas the
+resulting JavaScript code will execute on all architectures supported by the
+underlying SIMD enabled JavaScript engine.
+
+Use of non target specific SIMD code in C is possible via the gcc
+\ttt{vector\_size} attribute.  Emscripten also supports compiling such code.  A
+non target specific version of the \ttt{average} function is shown in
+Figure~\ref{fig:average-vector}.  The generated JavaScript code is virtually
+identical to the code resulting from the C code using intrinsics. If
+possible, developers should be encouraged to write their SIMD code using
+this more universal syntax.
+
+\begin{figure}
+\begin{small}
+\begin{program}[style=tt, number=true]
+typedef float floatx4 \_\_attribute\_\_ ((vector\_size(16)));
+fl\tab{}oat averageVectorSize(float *a, uint32\_t length) \{
+  floatx4 sumx4 = \{0.0f, 0.0f, 0.0f, 0.0f\};
+  floatx4 *ax4  = (floatx4 *)a;
+  fo\tab{}r (uint32\_t j = 0, l = length; j < l; j = j + 4) \{
+    sumx4 = sumx4 + *(ax4++);\untab{}
+  \}
+  return (\tab{}sumx4[0] + sumx4[1] +
+          sumx4[2] + sumx4[3])/length;\untab{}\untab{}
+\}
+\end{program}
+\end{small}
+\caption{SIMD C code with \ttt{vector\_size} for the \ttt{average} function}
+\label{fig:average-vector}
+\end{figure}
 
 
 \section{Benchmarks}
