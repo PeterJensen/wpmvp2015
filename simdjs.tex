@@ -223,10 +223,10 @@ fu\tab{}nction average(data) \{
 379  cmp esp,[0x645e9c]
 385  jc  445  (270629BD)
 391  mov esi,eax
-393  shl esi,2
+393  shl esi,1
 396  add esi,0x10
 399  mov ebx,ecx
-401  shl ebx,2
+401  shl ebx,1
 404  cmp esi,ebx
 406  ja  499  (270629F3)
 412  movups xmm2,[edi+eax*2]
@@ -259,8 +259,8 @@ line 3-4: Check to enable the JavaScript engine to abort the
 execution, if the loop has been running for too long.  It will prevent
 a user program from hanging the browser.
 
-line 5-11: Bounds check for the SIMD\_float32x4\_load operation. \ttt{ecx}
-holds the upper bound.
+line 5-11: Bounds check for the SIMD\_float32x4\_load operation. \ttt{eax}
+holds the index and \ttt{ecx} holds the upper bound.
 
 line 12: Load the 4 32-bit float values. \ttt{edi} holds the base address
 of the data.  The reason the index is multiplied by 2 and not 4 is the fact
@@ -550,17 +550,30 @@ and a SIMD implementation.
 
 The C++ SIMD implementation is done using x86 intrinsics.  The C++ kernels are 
 compiled with both the C++ clang compiler and with the Emscripten compiler.  
-This gives us a basis for comparing SIMD/Scalar speedups as well as absolute 
-performance differences between native C++ performance and JavaScript execution 
-performance.  For the JavaScript execution we've used our V8 and SpiderMonkey
-SIMD enabled prototypes.
+This gives us a basis for comparing SIMD/Scalar speedups for both C++ and
+JavaScript as well as C++/JavaScript performance differences.  For the JavaScript
+execution we've used our two SIMD enabled JavaScript engines; V8 and SpiderMonkey.
+
+The benchmarks are written such that each kernel operation is executed as many times
+as it takes for it to run in about a second.  This guarantees that the optimizing
+JavaScript JIT compilers kick in, which is essential for optimimal performance.
+
+The benchmark kernels we've collected performance data for are:
+
+\begin{itemize}
+\item
+\textbf{AverageFloat32x4:}
+
+\end{itemize}
 
 The sources for the C++ benchmarks can be found here: <REF>, and the sources
 for the handwritten JavaScript benchmarks can be found here: <REF>
 
 \section{Results}
 
-These are the combinations that we'll present the SIMD vs. Scalar results for:
+We've collected performance results for these combinations: C++, handwritten
+JavaScript, Emscripten produced JavaScript.  For JavaScript execution we're
+used both V8 and SpiderMonkey.
 
 \begin{itemize}
 \item
@@ -580,33 +593,47 @@ Emscripten produced JavaScript from C++ implementation executed with
 SpiderMonkey
 \end{itemize}
 
-\subsection{SIMD vs. Scalar relative speedups}
+\subsection{SIMD vs. Scalar}
 
-Figure~\ref{fig:simd-relative-speedups} shows the relative SIMD vs. Scalar speedups
-of the five combinations.
+Figure~\ref{fig:simd-scalar-speedup} shows the relative SIMD vs. Scalar performance
+of the five combinations.  Greater than 1 means that the kernel ran that the SIMD
+kernel ran that much faster than the corresponding scalar kernel.
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=0.45\textwidth]{figures/speedup-01.png}
+\includegraphics[width=0.45\textwidth]{figures/simd-scalar-speedup.png}
 \end{center}
-\caption{SIMD vs.Scalar relative speedups}
-\label{fig:simd-relative-speedups}
+\caption{SIMD vs. Scalar relative speedups}
+\label{fig:simd-scalar-speedup}
 \end{figure}
 
 \subsection{Scalar C++ vs. JavaScript}
 
-Figure~\ref{fig:cpp-js-scalar} shows the relative scalar speedup for each 
-of the kernels.  Less than 1 means that the kernel ran that much slower.
+Figure~\ref{fig:cpp-js-scalar} shows the relative scalar C++ vs. JavaScript
+performance for each of the five combinations. Less than 1 means that the 
+JavaScript kernel ran that much slower than the corresponding C++ kernel.
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=0.45\textwidth]{figures/scalar-speedup.png}
+\includegraphics[width=0.45\textwidth]{figures/cpp-js-scalar.png}
 \end{center}
-\caption{SIMD vs.Scalar relative speedups}
+\caption{Scalar C++ vs. Javascript relative performance}
 \label{fig:cpp-js-scalar}
 \end{figure}
 
-\subsection{C++/SIMD vs. JavaScript/SIMD}
+\subsection{SIMD C++ vs. JavaScript}
+
+Figure~\ref{fig:cpp-js-simd} shows the relative SIMD C++ vs. JavaScript
+performance for each of the five combinations. Less than 1 means that the 
+JavaScript kernel ran that much slower than the corresponding C++ kernel.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.45\textwidth]{figures/cpp-js-simd.png}
+\end{center}
+\caption{SIMD C++ vs. Javascript relative performance}
+\label{fig:cpp-js-simd}
+\end{figure}
 
 \section{Summary}
 
