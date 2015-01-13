@@ -240,7 +240,7 @@ fu\tab{}nction average(data) \{
 438  jmp 371  (27062973)
 \end{program}
 \end{small}
-\caption{JIT compiler generated code for the average function}
+\caption{JIT compiler generated code for the \ttt{for} loop in the \ttt{average} function}
 \label{fig:average-simd-code}
 \end{figure}
 
@@ -542,10 +542,71 @@ fl\tab{}oat averageVectorSize(float *a, uint32\_t length) \{
 \label{fig:average-vector}
 \end{figure}
 
-
 \section{Benchmarks}
 
+We've created a set of benchmark kernels.  The kernels are written in
+both C++ and JavaScript.  Each kernel will have both a scalar implementation
+and a SIMD implementation.
+
+The C++ SIMD implementation is done using x86 intrinsics.  The C++ kernels are 
+compiled with both the C++ clang compiler and with the Emscripten compiler.  
+This gives us a basis for comparing SIMD/Scalar speedups as well as absolute 
+performance differences between native C++ performance and JavaScript execution 
+performance.  For the JavaScript execution we've used our V8 and SpiderMonkey
+SIMD enabled prototypes.
+
+The sources for the C++ benchmarks can be found here: <REF>, and the sources
+for the handwritten JavaScript benchmarks can be found here: <REF>
+
 \section{Results}
+
+These are the combinations that we'll present the SIMD vs. Scalar results for:
+
+\begin{itemize}
+\item
+Natively compiled C++
+
+\item
+Handwritten JavaScript executed with V8
+
+\item
+Handwritten JavaScript executed with SpiderMonkey
+
+\item
+Emscripten produced JavaScript from C++ implementation executed with V8
+
+\item
+Emscripten produced JavaScript from C++ implementation executed with
+SpiderMonkey
+\end{itemize}
+
+\subsection{SIMD vs. Scalar relative speedups}
+
+Figure~\ref{fig:simd-relative-speedups} shows the relative SIMD vs. Scalar speedups
+of the five combinations.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.45\textwidth]{figures/speedup-01.png}
+\end{center}
+\caption{SIMD vs.Scalar relative speedups}
+\label{fig:simd-relative-speedups}
+\end{figure}
+
+\subsection{Scalar C++ vs. JavaScript}
+
+Figure~\ref{fig:cpp-js-scalar} shows the relative scalar speedup for each 
+of the kernels.  Less than 1 means that the kernel ran that much slower.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.45\textwidth]{figures/scalar-speedup.png}
+\end{center}
+\caption{SIMD vs.Scalar relative speedups}
+\label{fig:cpp-js-scalar}
+\end{figure}
+
+\subsection{C++/SIMD vs. JavaScript/SIMD}
 
 \section{Summary}
 
