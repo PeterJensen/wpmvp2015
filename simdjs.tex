@@ -689,15 +689,18 @@ Natively compiled C++
 Handwritten JavaScript executed with V8
 
 \item
-Handwritten JavaScript executed with SpiderMonkey
-
-\item
 Emscripten produced JavaScript from C++ implementation executed with V8
 
 \item
 Emscripten produced JavaScript from C++ implementation executed with
 SpiderMonkey
 \end{itemize}
+
+Note, we're not yet able to run 'generic'/handwritten SIMD JavaScript code
+efficiently with SpiderMonkey.  SpiderMonkey uses two different JIT compilers;
+one for 'generic' JavaScript code (IonMonkey) and another for the asm.js
+JavaScript subset (OdinMonkey).  Only the OdinMonkey JIT compiler has been
+adapted to work with the SIMD operations.
 
 \subsection{SIMD vs. Scalar}
 
