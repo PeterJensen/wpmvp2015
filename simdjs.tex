@@ -84,9 +84,6 @@
 
 \maketitle
 
-\begin{abstract}
-This is the text of the abstract.
-\end{abstract}
 
 %\category{CR-number}{subcategory}{third-level}
 
@@ -98,17 +95,9 @@ This is the text of the abstract.
 %\keywords
 %keyword1, keyword2
 
-\section{Introduction}
+\input{abstract}
 
-We'll explore the use of Mozilla's Emscripten to compile C++ programs, that
-has use of SIMD intrinsics or gcc style vector code, into JavaScript.  This was
-recently made possible by the SIMD.JS primitives introduced in JavaScript 
-engine prototypes for Chromium and Firefox as well as extensions to the 
-Emscripten compiler.  Emscripten will correctly translate a subset of available
-C++ SIMD x86 intrinsics into corresponding operations defined in SIMD.JS. The
-JavaScript benchmarks associated with the SIMD.JS primitives were converted to 
-C++ by hand, and then automatically converted back into JavaScript using the 
-Emscripten compiler.
+\input{intro}
 
 \section{SIMD.JS}
 
