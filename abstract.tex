@@ -1,0 +1,12 @@
+\begin{abstract}
+
+%problem
+A recent trend in web development uses Emscripten, Mozilla's LLVM-to-JavaScript compiler, to port existing native C/C++ applications to the Web at near-native speeds. However, compute-intensive applications, such as games and media-processing, that make use of SIMD intrinsics or gcc style vector code are not able to be compiled into JavaScript.
+%contribution 
+This paper presents the use of Emscripten to generate JavaScript code from C++ programs that include such vector code by using JavaScript's SIMD.JS, a new portable SIMD language extension. SIMD.JS allows JavaScript programmers to exploit vector parallelism by using the provided SIMD primitives and operations in their compute-intensive applications. Emscripten will correctly translate a subset of available C++ SIMD x86 intrinsics into the corresponding operations defined in SIMD.JS
+%result
+Using Emscripten, we show that the SIMD.JS benchmarks can be automatically compiled from C++ into JavaScript using the Emscripten compiler and obtain an average of X.XX speedup, compared to a Y.YY speedup of the hand-generated benchmarks.  
+%meaning
+Emscripten's ability to generate fast vector code using the portable SIMD.JS language extension allows a new set of compute-intensive C/C++ applications to be ported to the web making full use of SIMD hardware.
+
+\end{abstract}

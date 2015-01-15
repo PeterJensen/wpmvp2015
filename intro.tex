@@ -1,0 +1,26 @@
+
+\section{Introduction}
+
+More computing is being performed in web browsers. Games, multimedia, 
+image and video processing, and other compute-intensive applications are 
+being ported to JavaScript to be made available on the Web. An increasingly 
+popular approach for porting existing native applications to the web is to use
+Mozilla's Emscripten LLVM-to-JavaScript compiler. Emscripten compiles
+C/C++ code into highly optimizable JavaScript that runs at near-native speeds
+without the use of any plugins.
+
+While these applications can exploit the use of vector code when written in C/C++, 
+JavaScript applications were not able to make full use of the high performant and 
+energy efficient SIMD instructions which are now standard on modern x86 and 
+ARM hardware from mobile to servers. With the recent introduction of the portable 
+language extension SIMD.JS, JavaScript applications are now able to use the 
+provided SIMD primitives and operations to improve its performance by making full 
+use of the SIMD hardware available.
+
+This paper explores the implementation and evaluation of Emscripten's ability to generate 
+SIMD.JS code from its native C/C++ intrinsics counterpart. We present performance 
+data of the SIMD.JS benchmarks in JavaScript that have been automatically generated
+by Emscripten and compare it with its hand-written version. We use both of the 
+available prototypes of the SIMD.JS language extension: Google's V8 and Mozilla's 
+SpiderMonkey and show speedup in both.
+
