@@ -95,7 +95,23 @@
 %\keywords
 %keyword1, keyword2
 
-\input{abstract}
+\section{Abstract}
+%problem
+Emscripten, Mozilla's C/C++ to JavaScript compiler, can be used to port existing native C/C++ applications
+to the Web platform.  When paired with a fast JavaScript engine, the applications run at near-native speeds. However, compute-intensive C/C++ applications, such as games and media-processing, making use of SIMD intrinsics or gcc style vector code cannot achieve near-native speed, because JavaScript does not have language
+support for expressing SIMD operations.
+%contribution 
+This paper presents SIMD.JS, an evolving new JavaScript standard, enabling SIMD operations at the
+JavaScript language level, and extensions to Emscripten, enabling compilation of C++ programs that make use
+of SIMD intrinsics or gcc style vector code.  An extensive subset of available C++ SIMD x86 intrinsics
+is supported.
+%result
+Using Emscripten, we show how C/C++ SIMD programs are compiled into JavaScript resulting in equivalent
+speedups compared to scalar code.  
+%meaning
+The powerful combination of SIMD.JS enabled JavaScript engines and Emscripten's new ability to utilize the SIMD.JS
+primitives for it's code generation will allow a new set of compute intensive C/C++ applications to be ported to the Web  platform.
+
 
 \input{intro}
 
