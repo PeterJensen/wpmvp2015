@@ -497,7 +497,7 @@ fu\tab{}nction \_averageIntrin(\$a, \$length) \{
 \}
 \end{program}
 \end{small}
-\caption{Emscripten generated SIMD JavaScript code for the \ttt{average} function}
+\caption{Emscripten generated SIMD JavaScript code for the \ttt{averageIntrin} function}
 \label{fig:average-intrin-js}
 \end{figure}
 
@@ -562,18 +562,124 @@ The benchmark kernels we've collected performance data for are:
 
 \begin{itemize}
 \item
-\textbf{AverageFloat32x4:}
+\textbf{AverageFloat32x4:} Average 10,000 32-bit float number.  This 
+the kernel for the example used throughout the previous examples.
+
+\item
+\textbf{Mandelbrot:} Compute how many iterations it takes for
+z(i+1) = z(i)**2 + c to diverge for seed point c = (0.01, 0.01).
+Divergence is determined by z**2 \textgreater 4. This seed point never diverges, so
+the loop always runs up to the maximum of iterations allowed.  The
+maximum number of iterations for this kernel is set to 100.  The scalar version
+of the kernel will compute the iteration count for one seed point, and
+the SIMD version will compute the iteration count for four seedpoints.
+As an example of how all the benchmark kernels are structured we've shown
+the handwritten JavaScript and C++ version of this kernel in Figure~\ref{mandel-js}
+and Figure~\ref{mandel-cpp}.
+
+\item
+\textbf{MatrixMultiplication:} Multiply two 4x4 matrices.  For each element in
+the resulting 4x4 matrix, 4 scalar multiplications and 3 scalar additions are
+required.  The SIMD version will rearrange the source data, using a shuffle operation,
+and compute an entire row in the result matrix with 4 SIMD multiplies and 3 SIMD additions.
+
+\item
+\textbf{VertexTransform:} Multiply a 4x4 matrix with a 4 element vector.  This
+is a common CPU side operation for creating projection matrices for webGL shaders.
+Typically, it's used to compute a transformation for a point in 3D space, e.g. rotation
+around an axis.  For each element in the resulting 4 element vector, 4 scalar multiplies
+and 3 scalar additions must be computed.  The SIMD version will compute all 4 elements,
+using SIMD multiplies and adds, thereby reducing the number of multiply and add instructions.
+Some shuffling is required to get the input data into the right lanes.
+
+\item
+\textbf{MatrixTranspose:} Transpose a 4x4 matrix.  This is also a common operation, when
+doing vector/matrix algebra.  Rows are made into columns.  The scalar kernel, simply moves
+the 16 elements around one by one.  The SIMD version uses 8 shuffle operations.
+
+\item
+\textbf{MatrixInverse:} Compute the inverse of a 4x4 matrix.  This is a complex operation,
+involving hundreds of multiples and add operations.  There are several different ways
+of computing the inverse of a matrix.  Here we have chosen a method called the Cramer rule
+<REF>.  This kernel is the most compute intensive.
 
 \end{itemize}
+
+\begin{figure}
+\begin{small}
+\begin{program}[style=tt, number=true]
+\_\_\tab{}m128i mandelx4(\tab{}\_\_m128 c\_re4, \_\_m128 c\_im4,
+                uint32\_t max\_iterations) \{\untab{}
+  \_\_m128  z\_re4  = c\_re4;
+  \_\_m128  z\_im4  = c\_im4;
+  \_\_m128  four4  = \_mm\_set\_ps1(4.0f);
+  \_\_m128  two4   = \_mm\_set\_ps1(2.0f);
+  \_\_m128i count4 = \_mm\_set1\_epi32(0);
+  \_\_m128i one4   = \_mm\_set1\_epi32(1);
+  uint32\_t i;
+  fo\tab{}r (i = 0; i < max\_iterations; ++i) \{
+    \_\_m128 z\_re24 = \_mm\_mul\_ps(z\_re4, z\_re4);
+    \_\_m128 z\_im24 = \_mm\_mul\_ps(z\_im4, z\_im4);
+    \_\_\tab{}m128 mi4      =
+      \_mm\_cmple\_ps(\_mm\_add\_ps(z\_re24, z\_im24), four4);\untab{}
+    if\tab{} (\_mm\_movemask\_ps(mi4) == 0)
+      break;\untab{}
+    \_\_m128 new\_re4 = \_mm\_sub\_ps(z\_re24, z\_im24);
+    \_\_m128 new\_im4 = \_mm\_mul\_ps(\_mm\_mul\_ps(two4, z\_re4), z\_im4);
+    z\_re4 = \_mm\_add\_ps(c\_re4, new\_re4);
+    z\_im4 = \_mm\_add\_ps(c\_im4, new\_im4);
+    co\tab{}unt4 = \_mm\_add\_epi32(
+      count4, \_mm\_and\_si128(\_mm\_castps\_si128(mi4), one4));\untab{}\untab{}
+  \}
+  return count4;\untab{}
+\};
+\end{program}
+\end{small}
+\caption{C++ SIMD Mandelbrot kernel}
+\label{fig:mandel-cpp}
+\end{figure}
+
+\begin{figure}
+\begin{small}
+\begin{program}[style=tt, number=true]
+fu\tab{}nction mandelx4(c\_re4, c\_im4, max\_iterations) \{
+  var z\_re4  = c\_re4;
+  var z\_im4  = c\_im4;
+  var four4  = SIMD.float32x4.splat(4.0);
+  var two4   = SIMD.float32x4.splat(2.0);
+  var count4 = SIMD.int32x4.splat(0);
+  var one4   = SIMD.int32x4.splat(1);
+  fo\tab{}r (var i = 0; i < max\_iterations; ++i) \{
+    var z\_re24 = SIMD.float32x4.mul(z\_re4, z\_re4);
+    var z\_im24 = SIMD.float32x4.mul(z\_im4, z\_im4);
+    var mi4    = SI\tab{}MD.float32x4.lessThanOrEqual(
+                   SIMD.float32x4.add(z\_re24, z\_im24), four4);\untab{}
+    // check if all 4 values are greater than 4.0
+    if\tab{} (mi4.signMask === 0x00)
+      break;\untab{}
+
+    var new\_re4 = SIMD.float32x4.sub(z\_re24, z\_im24);
+    va\tab{}r new\_im4 = SIMD.float32x4.mul(
+      SIMD.float32x4.mul(two4, z\_re4), z\_im4);\untab{}
+    z\_re4       = SIMD.float32x4.add(c\_re4, new\_re4);
+    z\_im4       = SIMD.float32x4.add(c\_im4, new\_im4);
+    co\tab{}unt4      = SIMD.int32x4.add(
+      count4, SIMD.int32x4.and (mi4, one4));\untab{}\untab{}
+  \}
+  return count4;\untab{}
+\}
+\end{program}
+\end{small}
+\caption{JavaScript SIMD Mandelbrot kernel}
+\label{fig:mandel-js}
+\end{figure}
 
 The sources for the C++ benchmarks can be found here: <REF>, and the sources
 for the handwritten JavaScript benchmarks can be found here: <REF>
 
 \section{Results}
 
-We've collected performance results for these combinations: C++, handwritten
-JavaScript, Emscripten produced JavaScript.  For JavaScript execution we're
-used both V8 and SpiderMonkey.
+We've collected performance results for these combinations:
 
 \begin{itemize}
 \item
