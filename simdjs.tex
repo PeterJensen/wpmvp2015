@@ -153,15 +153,15 @@ processing, etc. Also, large games, which were previously standalone, natively
 compiled programs, have been ported to JavaScript to run within the browser 
 environment.  More recently, JavaScript has been adopted as a server side 
 scripting language (node.js), and lately, JavaScript has found it's way to the
-mobil platform as a language that offers better portability between the 
+mobile platform as a language that offers better portability between the 
 different mobile platforms without sacrificing performance and features.  For 
-example, access to platform sensors (location, accelerometers, etc) are 
+example, platform sensors (location, accelerometers, etc) are 
 accessible from JavaScript via W3C APIs.
 
 Even with the past 7 years of JavaScript performance advances, the desire for 
 better performing JavaScript engines has not lessened, quite the contrary. It's
 a spiral that keeps on going; better performance leads to more uses, more uses 
-require better performance.  Specifically, software that use data parallelism 
+require better performance.  Specifically, software that uses data parallelism 
 to achieve adequate performance have, so far, been restricted to natively 
 compiled languages, such as C++, because such languages offer ways of utilizing 
 the SIMD instructions available in modern CPUs.  JavaScript has only one number
@@ -760,8 +760,21 @@ JavaScript kernel ran that much slower than the corresponding C++ kernel.
 \appendix
 \section{Appendix Title}
 
-This is the text of the appendix, if you need one.
+This paper describes SIMD.JS and Emscripten, together these technologies allow 
+the porting to the Web platform of compute-intensive native C and C++ applications
+with near-native performance. The contributions of our work include the changes to
+Emscripten to automatically port native C/C++ at near-native speeds when using 
+SIMD intrinsics or gcc style vector code. Our contributions are publicly available, and
+our evaluation demonstrates that this path for porting native applications with vector code
+ can result in equivalent speedups to scalar code in their respective environments.
+Future work should consider a study of native C/C++ applications to find vector code
+that might not have equivalents in the evolving SIMD.JS specification in order to
+contribute to it.
+ 
+C/C++ applications 
 
+ , a new JavaScript standard, that provides low
+level data types and operations that nicely map to existing SIMD hardware.  
 \acks
 
 Acknowledgments, if needed.
