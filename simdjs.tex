@@ -35,6 +35,27 @@
 \usepackage{program}
 \usepackage{graphicx}
 
+%
+% Load hyperref
+%
+\ifx\pdfoutput\undefined     %This is for regular output
+  \def\nestedref{\protect\ref}
+  \def\pdfbookmark#1#2{}%      % need this for non-pdf to work
+\else %Use hyperref only if we run as pdflatex
+  \usepackage[pdftex,
+              colorlinks,
+              linkcolor=blue,
+              citecolor=red,
+              pdfview=xyz,
+              plainpages=false,
+              pdfstartview=Fit,
+              pdfhighlight=/P
+              ]{hyperref}
+  \def\nestedref{\protect\ref*}
+      %Redefine the cross-referencing with no page references
+ \long\def\genreftext#1#2#3#4{#1~#2}
+\fi
+
 % hyphen-able fixed-width font
 \newcommand{\ttt}[1]{{\texttt{\hyphenchar\font=`\-\relax #1}}}%`
 \newcommand{\fixme}[1]{{\color{red} #1}}
@@ -131,7 +152,7 @@ elements in short vectors, e.g. vectors of length 4, 8, or 16.  Use of these
 instructions leads to increased performance, because more data processing is 
 achieved with fewer instructions executed, and fewer instructions also means
 power savings, which is of outmost importance on mobile battery powered
-devices.  Figure~\ref{fig:simd} shows how four scalar additions are 
+devices.  Figure~\ref{fig:simd-illustration} shows how four scalar additions are 
 combined into a single operation.
 
 \begin{figure}
@@ -139,13 +160,13 @@ combined into a single operation.
 \includegraphics[width=0.45\textwidth]{figures/simd-04.png}
 \end{center}
 \caption{Replacing four scalar additions with one SIMD addition}
-\label{fig:simd}
+\label{fig:simd-illustration}
 \end{figure}
 
 JavaScript is quickly emerging as one of the most popular languages among 
 software developers.  It was originally used for simple web page scripting for 
 creating interactive web pages. Around 2008, very efficient and high 
-performance JavaScript engines emerged, e.g. Firefox's TraceMonkey and 
+performance JavaScript engines emerged, e.g. Firefox's TraceMonkey~\cite{tracemonkey} and 
 Chrome's V8 engines. Since then, JavaScript has become a viable language for 
 things beyond just basic web page interactivity, as witnessed by it's use in 
 large web based applications, such as office applications; e-mail, document 
@@ -194,12 +215,12 @@ hierarchy.
 \end{figure}
 
 We've modelled the semantics of the SIMD types and operations as a polyfill 
-<REF>.  This allows programmers to experiment without using a JavaScript
-engine that natively supports SIMD.JS.  The polyfill also serves as documentation
-for the semantics and interfaces.  It will also reflect the current state of
-the proposal.  The proposal is under active development and changes are likely to 
-happen as the proposal is being refined and moves forward through the approval
-process.
+~\cite{ecmascript-simd-polyfill}.  This allows programmers to experiment without
+using a JavaScript engine that natively supports SIMD.JS.  The polyfill also 
+serves as documentation for the semantics and interfaces.  It will also reflect 
+the current state of the proposal.  The proposal is under active development 
+and changes are likely to happen as the proposal is being refined and moves 
+forward through the approval process.
 
 As an example use case, Figure~\ref{fig:average-simd} shows the SIMD JavaScript
 code for computing the average of an array of floating point numbers.  The numbers
@@ -291,7 +312,7 @@ holds the value of \ttt{sum}.
 line 19-20: Move the new loop index value to it's proper register and jump back
 to the top of the loop.
 
-For more details on how the JIT compilers operate see <REF>.
+For more details on how the JIT compilers operate see ~\cite{wpmvp2014}.
 
 \subsection{The Future of SIMD.JS}
 
@@ -319,8 +340,8 @@ have already implemented most of the ES6 features.
 \section{Emscripten}
 
 Emscripten is a compiler that compiles C/C++ programs into JavaScript.  It is
-based on the clang/LLVM compiler infrastructure <REF>.  The compiler is the
-brainchild of Alon Zakai of Mozilla.
+based on the clang/LLVM compiler infrastructure ~\cite{emscripten}.  The compiler
+is the brainchild of Alon Zakai  Mozilla.
 
 As an example of how it works, we'll look at the generated JavaScript code
 resulting from compilign a simple C function.  We'll again use a function that
@@ -429,7 +450,7 @@ semantics dictate that the resulting expression is a floating point number.
 
 Emscripten has been successfully used to compiler very large C/C++ code
 bases (+100K lines of code).  For example both Epic's and Unity's game engines
-have been ported, using Emscripten <REF>.  Game engines are one example of
+have been ported, using Emscripten ~\cite{unreal-emscripten}.  Game engines are one example of
 software that will have optional implementations of performance critical
 portions of the code implemented using SIMD features.  Since, JavaScript
 hasn't had a way of utilizing these powerful low level SIMD features of the
@@ -577,7 +598,7 @@ The benchmark kernels we've collected performance data for are:
 the kernel for the example used throughout the previous examples.
 
 \item
-\textbf{Mandelbrot:} Compute how many iterations it takes for
+\textbf{Mandelbrot:}~\cite{mandelbrot} Compute how many iterations it takes for
 z(i+1) = z(i)**2 + c to diverge for seed point c = (0.01, 0.01).
 Divergence is determined by z**2 \textgreater 4. This seed point never diverges, so
 the loop always runs up to the maximum of iterations allowed.  The
@@ -612,7 +633,7 @@ the 16 elements around one by one.  The SIMD version uses 8 shuffle operations.
 \textbf{MatrixInverse:} Compute the inverse of a 4x4 matrix.  This is a complex operation,
 involving hundreds of multiples and add operations.  There are several different ways
 of computing the inverse of a matrix.  Here we have chosen a method called the Cramer rule
-<REF>.  This kernel is the most compute intensive.
+~\cite{cramer-rule}.  This kernel is the most compute intensive.
 
 \end{itemize}
 
@@ -685,8 +706,8 @@ fu\tab{}nction mandelx4(c\_re4, c\_im4, max\_iterations) \{
 \label{fig:mandel-js}
 \end{figure}
 
-The sources for the C++ benchmarks can be found here: <REF>, and the sources
-for the handwritten JavaScript benchmarks can be found here: <REF>
+The sources for the C++ benchmarks can be found here ~\cite{github-benchcpp}, and the sources
+for the handwritten JavaScript benchmarks can be found here: ~\cite{github-benchjs}
 
 \section{Results}
 
@@ -757,28 +778,25 @@ JavaScript kernel ran that much slower than the corresponding C++ kernel.
 
 \section{Summary}
 
-\appendix
-\section{Appendix Title}
-
-This is the text of the appendix, if you need one.
-
 \acks
 
 Acknowledgments, if needed.
 
 % We recommend abbrvnat bibliography style.
 
-\bibliographystyle{abbrvnat}
+%\bibliographystyle{abbrvnat}
+\bibliographystyle{plain}
+\bibliography{simdjs}
 
 % The bibliography should be embedded for final submission.
 
-\begin{thebibliography}{}
-\softraggedright
+%\begin{thebibliography}{}
+%\softraggedright
 
-\bibitem[Smith et~al.(2009)Smith, Jones]{smith02}
-P. Q. Smith, and X. Y. Jones. ...reference text...
+%\bibitem[Smith et~al.(2009)Smith, Jones]{smith02}
+%P. Q. Smith, and X. Y. Jones. ...reference text...
 
-\end{thebibliography}
+%\end{thebibliography}
 
 
 \end{document}
