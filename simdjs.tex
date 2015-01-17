@@ -153,10 +153,10 @@ been the source of many security and instability issues in web browsers, so
 avoiding those is highly desirable.
 
 Typically, compute intensive C/C++ applications will make use if SIMD/vector
-code to achieve the desired performance, however, since there's no equivalent
-way of expressing SIMD operations in JavaScript, the JavaScript code resulting from 
-compiling the C/C++ applications is missing out on potentially significant performance
-gains.
+code to achieve the desired performance. However, because JavaScript does not have an equivalent
+way of expressing SIMD operations, the JavaScript code resulting from 
+compiling the C/C++ applications via Emscripten is missing out on potentially 
+significant performance gains.
 
 With the recent introduction of SIMD.JS; a new JavaScript language proposal,
 it is now possible to use SIMD JavaScript primitives to improve performance of
