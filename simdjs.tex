@@ -174,15 +174,15 @@ processing, etc. Also, large games, which were previously standalone, natively
 compiled programs, have been ported to JavaScript to run within the browser 
 environment.  More recently, JavaScript has been adopted as a server side 
 scripting language (node.js), and lately, JavaScript has found it's way to the
-mobil platform as a language that offers better portability between the 
+mobile platform as a language that offers better portability between the 
 different mobile platforms without sacrificing performance and features.  For 
-example, access to platform sensors (location, accelerometers, etc) are 
+example, platform sensors (location, accelerometers, etc) are 
 accessible from JavaScript via W3C APIs.
 
 Even with the past 7 years of JavaScript performance advances, the desire for 
 better performing JavaScript engines has not lessened, quite the contrary. It's
 a spiral that keeps on going; better performance leads to more uses, more uses 
-require better performance.  Specifically, software that use data parallelism 
+require better performance.  Specifically, software that uses data parallelism 
 to achieve adequate performance have, so far, been restricted to natively 
 compiled languages, such as C++, because such languages offer ways of utilizing 
 the SIMD instructions available in modern CPUs.  JavaScript has only one number
@@ -514,7 +514,8 @@ fu\tab{}nction \_averageIntrin(\$a, \$length) \{
       \$a\tab{}dd\$i =
         SI\tab{}MD\_float32x4\_add(
           \$sumx4\$010,
-          SIMD\_float32x4\_load(buffer, \$a + (\$j\$09 << 2) \textbar\ 0));\untab{}\untab{}
+          SIMD\_float32x4\_load(
+            buffer, \$a + (\$j\$09 << 2) \textbar\ 0));\untab{}\untab{}
       \$j\$09 = \$j\$09 + 4 \textbar\ 0;
       if\tab{} (\!(\$j\$09 >>> 0 < \$length >>> 0)) \{
         \$sumx4\$0\$lcssa = \$add\$i;
@@ -776,11 +777,27 @@ JavaScript kernel ran that much slower than the corresponding C++ kernel.
 \label{fig:cpp-js-simd}
 \end{figure}
 
+\section{Future Work}
+
+For future work we're planning on adding a more complete set of SIMD.JS primitives, to
+better cover all the existing SIMD intrinsics being used.  A study of which missing intrinsics
+have wider use is warrented.  When adding more primitives, with direct mapping to
+hardware instructions on one architecture, but not on another, it might not be possible to
+achieve the desired performance across all architectures.
+
 \section{Summary}
 
+This paper describes SIMD.JS and Emscripten, together these technologies allow 
+porting of compute intensive native C/C++ applications to the Web platform
+with near-native performance. The contributions of our work include the changes to
+Emscripten enabling compilation of C/C++ programs that use
+SIMD intrinsics or gcc style vector code. Our contributions are publicly available, and
+our evaluation demonstrates that the SIMD vs. scalar speedup we see with the C++ kernels
+are equivalent for the equivalent JavaScript kernels.
+ 
 \acks
 
-Acknowledgments, if needed.
+Acknowledgments goes here.
 
 % We recommend abbrvnat bibliography style.
 
