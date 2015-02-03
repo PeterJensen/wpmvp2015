@@ -90,18 +90,18 @@
 \authorinfo{Peter Jensen}
            {Intel Corporation}
            {peter.jensen@intel.com}
-\authorinfo{John McCutchan}
-           {Google Inc.}
-           {johnmccutchan@google.com}
 \authorinfo{Ivan Jibaja}
            {Intel Corporation}
            {ivan.jibaja@intel.com}
-\authorinfo{Dan Gohman}
-           {Mozilla}
-           {sunfish@mozilla.com}
 \authorinfo{Ningxin Hu}
            {Intel Corporation}
            {ningxin.hu@intel.com}
+\authorinfo{Dan Gohman}
+           {Mozilla}
+           {sunfish@mozilla.com}
+\authorinfo{John McCutchan}
+           {Google Inc.}
+           {johnmccutchan@google.com}
 
 \maketitle
 
@@ -135,10 +135,11 @@ available C++ SIMD x86 intrinsics is supported.
 Using Emscripten, we show how C/C++ SIMD programs are compiled into 
 JavaScript resulting in equivalent speedups compared to scalar code.  
 %meaning
-The powerful combination of SIMD.JS enabled JavaScript engines and 
-Emscripten's new ability to utilize the SIMD.JS primitives for it's 
+The new powerful combination of SIMD.JS enabled JavaScript engines and 
+Emscripten's newly added ability to utilize the SIMD.JS primitives for it's 
 code generation will allow a new set of compute intensive C/C++ 
-applications to be ported to the Web  platform.
+applications to be ported to the Web  platform, thereby enabling the
+next leap in performance on the web platform.
 
 \section{Introduction}
 
@@ -195,8 +196,8 @@ combined into a single operation.
 JavaScript is quickly emerging as one of the most popular languages among 
 software developers.  It was originally used for simple web page scripting for 
 creating interactive web pages. Around 2008, very efficient and high 
-performance JavaScript engines emerged, e.g. Firefox's TraceMonkey~\cite{tracemonkey} and 
-Chrome's V8 engines. Since then, JavaScript has become a viable language for 
+performance JavaScript engines emerged (e.g., Firefox's TraceMonkey~\cite{tracemonkey} and 
+Chrome's V8 engines). Since then, JavaScript has become a viable language for 
 things beyond just basic web page interactivity, as witnessed by it's use in 
 large web based applications, such as office applications; e-mail, document 
 processing, etc. Also, large games, which were previously standalone, natively
@@ -370,11 +371,11 @@ have already implemented most of the ES6 features.
 
 Emscripten is a compiler that compiles C/C++ programs into JavaScript.  It is
 based on the clang/LLVM compiler infrastructure ~\cite{emscripten}.  The compiler
-is the brainchild of Alon Zakai  Mozilla.
+is the brainchild of Mozilla's Alon Zakai.
 
 As an example of how it works, we'll look at the generated JavaScript code
-resulting from compilign a simple C function.  We'll again use a function that
-computes the average of float numbers.  Figure~\ref{fig:average-scalar} shows
+resulting from compiling a simple C function.  We'll again use a function that
+computes the average of a sequence of float numbers.  Figure~\ref{fig:average-scalar} shows
 the input C program.
 
 \begin{figure}
@@ -394,7 +395,7 @@ fl\tab{}oat averageScalar(float *a, uint32\_t length) \{
 \end{figure}
 
 The Emscripten compiler command is similar to the clang compiler command, and
-takes most of the same options.  The following command will generate optimized
+takes most of the same options.  The following command will generate the optimized
 JavaScript code shown in Figure~\ref{fig:average-scalar-code}:
 
 \smallskip
@@ -437,7 +438,7 @@ fu\tab{}nction \_averageScalar(\$a, \$length) \{
 \label{fig:average-scalar-code}
 \end{figure}
 
-This example shows how Emscripten manages to map a staticly typed language (C) with pointers
+This example shows how Emscripten manages to map a staticly typed language with pointers (C)
 to a dynamically typed language without pointers (JavaScript).
 
 Memory is modelled as overlayed typed arrays.
@@ -516,7 +517,7 @@ The \ttt{\_\_m128} type holds 4 32-bit float numbers.  The \ttt{\_mm\_*\_ps}
 function calls are the SIMD intrinsics, which operates on single precision 
 \ttt{\_\_m128} values.  For example, the \ttt{\_mm\_add\_ps} intrinsic maps 
 to the x86 \ttt{addps} instruction, which adds 4 32-bit float numbers in one 
-operation.  This allows the iteration count to be reduced by a factor of 4
+operation.  This allows the iteration count to be reduced by a factor of 4,
 resulting in an equivalent speedup.
 
 The resulting JavaScript produced by Emscripten is shown in
@@ -572,7 +573,7 @@ here is the use of the \ttt{SIMD\_float32x4\_add} and \ttt{SIMD\_float32x4\_load
 SIMD.JS operations.  The use of '\_' instead of '.' is because Emscripten have
 created single identifier versions for all the SIMD.JS primitives.
 
-It's important to note that use of CPU specific intrinsics makes the C version
+Use of CPU specific intrinsics makes the C version
 of the code target specific, i.e. it will only execute on x86 CPUs, whereas the
 resulting JavaScript code will execute on all architectures supported by the
 underlying SIMD enabled JavaScript engine.
@@ -620,18 +621,34 @@ The benchmarks are written such that each kernel operation is executed as many t
 as it takes for it to run in about a second.  This guarantees that the optimizing
 JavaScript JIT compilers kick in, which is essential for optimimal performance.
 
+When creating SIMD optimized code from scalar code, there are basically two
+approaches; 1) Combine a sequential sequence of scalar operations into
+SIMD operations, and 2) Combine multiple iterations of simple loops, by replacing
+the scalar operations with equivalent SIMD operations.  Typical examples of
+1) are matrix/vector operations, where there's no loops involved with
+the computations, and a typical example of 2) is the average example shown previously.
+We cover both of these two types of SIMD optimizations in the benchmarks we've written.
+
 The benchmark kernels we've collected performance data for are:
 
 \begin{itemize}
 \item
-\textbf{AverageFloat32x4:} Average 10,000 32-bit float number.  This 
-is the kernel for the example used throughout the previous examples.
+\textbf{AverageFloat32x4:} Average 10,000 32-bit float number.  The
+SIMD version of this kernel will use SIMD instructions in the loop
+to perform vector versions of the equivalent scalar operations, thereby
+achieving an iteration count reduced by the vector length (4).
+This the kernel for the example used throughout the previous examples.
 
 \item
 \textbf{Mandelbrot:}~\cite{mandelbrot} Compute how many iterations it takes for
 z(i+1) = z(i)**2 + c to diverge for seed point c = (0.01, 0.01).
-Divergence is determined by z**2 \textgreater 4. This seed point never diverges, so
-the loop always runs up to the maximum of iterations allowed.  The
+Divergence is determined by z**2 \textgreater 4.  Different seed points
+will typically diverge after different number of iterations.  This results
+in a non-trivial SIMD/vector implementation, since the control flow in the loop
+will differ for different seed points.  Our implementation relies on computing an
+increment vector, with 0 for the vector elements that have already diverged, and 1
+for the elements that haven't.  However, for the chosen seed point the
+series never diverges, so the loop always runs up to the maximum number of iterations allowed.  The
 maximum number of iterations for this kernel is set to 100.  The scalar version
 of the kernel will compute the iteration count for one seed point, and
 the SIMD version will compute the iteration count for four seedpoints.
@@ -812,7 +829,7 @@ JavaScript kernel ran that much slower than the corresponding C++ kernel.
 
 For future work we're planning on adding a more complete set of SIMD.JS primitives, to
 better cover all the existing SIMD intrinsics being used.  A study of which missing intrinsics
-have wider use is warrented.  When adding more primitives, with direct mapping to
+have wider use is warranted.  When adding more primitives, with direct mapping to
 hardware instructions on one architecture, but not on another, it might not be possible to
 achieve the desired performance across all architectures.
 
