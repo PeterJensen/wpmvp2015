@@ -789,6 +789,10 @@ Figure~\ref{fig:simd-scalar-speedup} shows the relative SIMD vs. Scalar performa
 of the four combinations.  Greater than 1 means that the kernel ran that the SIMD
 kernel ran that much faster than the corresponding scalar kernel.
 
+Both the Average and Mandelbrot benchmarks shows ~4x speedup.  This is inline
+with expectations since the SIMD version of the kernel have four times fewer
+iterations.
+
 \begin{figure}
 \begin{center}
 \includegraphics[width=0.45\textwidth]{figures/simd-scalar-speedup.png}
